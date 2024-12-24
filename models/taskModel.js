@@ -1,56 +1,63 @@
 import mongoose from "mongoose";
 
-const taskSchema=new mongoose.Schema( {
+const taskSchema = new mongoose.Schema(
+  {
     title: {
-        type: String,
-        required: [true, "Please enter your task title"],
+      type: String,
+      required: [true, "Please enter your task title"],
     },
     description: {
-        type: String,
-        required: [true, "Please enter your task description"],
+      type: String,
+      required: [true, "Please enter your task description"],
     },
     startDate: {
-        type: Date,
-        required: [true, "Please enter your task start date"],
+      type: Date,
+      required: [true, "Please enter your task start date"],
     },
     endDate: {
-        type: Date,
-        required: [true, "Please enter your task end date"],
+      type: Date,
+      required: [true, "Please enter your task end date"],
     },
     priority: {
-        type: String,
-        default:"Low",
-        enum: {
-            values: ["Low", "Medium", "High"],
-            message: "Please select correct priority for task",
-        },
+      type: String,
+      default: "Low",
+      enum: {
+        values: ["Low", "Medium", "High"],
+        message: "Please select correct priority for task",
+      },
     },
     status: {
-        type: String,
-        default:"Todo",
-        enum: {
-            values: ["Todo", "Progress", "Completed", "REASSIGNED"],
-            message: "Please select correct status for task",
-        },
+      type: String,
+      default: "To Do",
+      enum: {
+        values: ["To Do", "Progress", "Review", "Reassigned", "Completed"],
+        message: "Please select correct status for task",
+      },
     },
 
     developer: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: [true, "Please assign a Developer!!!"],
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Please assign a Developer!!!"],
     },
     assignedBy: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      // required: true,
     },
     createdAt: {
-        type: Date,
-        default: Date.now,
+      type: Date,
+      default: Date.now,
     },
-},{timestamps:true})
+  },
+  { timestamps: true }
+);
 
-
-const Task=mongoose.model("Task",taskSchema);
+const Task = mongoose.model("Task", taskSchema);
 
 export default Task;

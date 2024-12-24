@@ -347,6 +347,14 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     next(new ApiError(500, error.message));
   }
 });
+
+const checkUserExistsById=async(id)=>{
+  const user=await User.findById(id);
+  if(!user){
+    throw new ApiError(404,"User you are looking for does not exist!")
+  }
+  return user;
+}
 export {
   loginUser,
   logoutUser,
@@ -357,4 +365,5 @@ export {
   generateAccessAndRefereshTokens,
   getUserById,
   getAllUsers,
+  checkUserExistsById
 };
