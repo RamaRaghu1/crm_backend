@@ -16,7 +16,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     }
 
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    console.log("ghghg", decodedToken);
+    // console.log("ghghg", decodedToken);
     console.log("id", new mongoose.Types.ObjectId(decodedToken._id))
     const user = await User.findById(new mongoose.Types.ObjectId(decodedToken._id));
     // .select("-password -refreshToken")

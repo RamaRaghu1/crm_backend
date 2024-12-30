@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 
+
 const projectScehema=new mongoose.Schema({
     title: {
         type: String,
@@ -18,16 +19,7 @@ const projectScehema=new mongoose.Schema({
         type: Date,
         required: [true, "Please enter your project end date"],
     },
-    photo: {
-        public_id: {
-            type: String,
-            // required: true,
-        },
-        url: {
-            type: String,
-            // required: true,
-        },
-    },
+   
     assignedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -37,7 +29,7 @@ const projectScehema=new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
 // type:String,
-        required: true,
+        // required: true,
     },
     developers: [
         {
@@ -47,11 +39,19 @@ const projectScehema=new mongoose.Schema({
             // required: true,
         },
     ],
+    tasks:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Task",
+            // type:String,
+            // required: true,
+        },
+    ],
     status: {
         type: String,
-        default: "Todo",
+        default: "To Do",
         enum: {
-            values: ["Todo", "Progress", "Completed"],
+            values: ["To Do", "In Progress", "Completed"],
             message: "Please select correct status for project",
         },
     },

@@ -4,26 +4,21 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import Project from "../models/projectModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import ApiFeatures from "../utils/apiFeature.js";
-
+import mongoose from "mongoose";
+import { checkUserExistsById } from "./userController.js";
 const createProject = asyncHandler(async (req, res) => {
   try {
     const data = req.body;
-    const projectThumbnail = data.photo;
+    const projectLeader = req.user.id;
 
-    if (projectThumbnail) {
-      const photo = await cloudinary.uploader.upload(projectThumbnail, {
-        folder: "projects",
-      });
+    const projectData = {
+      ...data,
+      projectLeader,
+    };
 
-      data.photo = {
-        public_id: photo.public_id,
-        url: photo.secure_url,
-      };
-    }
+    console.log("vfhjbghj", projectData);
 
-    console.log("vfhjbghj", data);
-
-    const project = await Project.create(data);
+    const project = await Project.create(projectData);
 
     return res
       .status(201)
@@ -110,44 +105,149 @@ const getAllCompletedProjects = asyncHandler(async (req, res) => {
 
 const getProjectById = asyncHandler(async (req, res) => {
   try {
-    const { id } = req.body;
-    const project = await Project.find({ _id: id });
-
+    const { id } = req.params;
+    const objectId = new mongoose.Types.ObjectId(id);
+    const project = await Project.aggregate([
+      {
+        $match: {
+          _id: objectId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: '_id',
+          foreignField: 'projectId',
+          as: 'tasks',
+        },
+      },
+      {
+        $lookup: {
+          from: 'users', 
+          let: { developerIds: '$developers' }, 
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ['$_id', '$$developerIds'], 
+                },
+              },
+            },
+            {
+              $project: {
+                name: 1, 
+                position: 1,
+              },
+            },
+          ],
+          as: 'developers',
+        },
+      }
+      
+    ]);
+    
+const projectData=project[0];
     res
       .status(200)
-      .json(new ApiResponse(200, project, "projects fetched successfully"));
+      .json(new ApiResponse(200 ,projectData,  "projects fetched successfully"));
   } catch (error) {
     throw new ApiError(500, error.message);
   }
 });
 
+const removeAssignDeveloper=asyncHandler(async(req,res)=>{
+const {id}=req.params;
+const {devId}=req.body;
+console.log("user____", devId)
+const project= await checkProjectExists(id);
+// console.log("_____________", project)
+await checkProjectLeader(project.projectLeader, req.user.id);
 
-const checkAssignDeveloper=asyncHandler(async(req, res)=>{
-  const {id}=req.body;
-  const {projectId}=req.params;
-  const project= await checkProjectExists(projectId);
+const user = await checkUserExistsById(devId);
+console.log("____________", user)
+const updateProject = await Project.findOneAndUpdate(
+  {
+      _id: project.id,
+  },
+  {
+      $pull: {
+          developers: user.id,
+      },
+  },
+  {new:true}
+);
 
-  const assign =project.developers.includes(id);
+res.status(200).json(new ApiResponse(200,updateProject, "developer removed successfully"));
+})
 
-  res
-  .status(200)
-  .json(new ApiResponse(200, assign, "Already this project is assigned to the developr "));
+const updateProject=asyncHandler(async(req,res)=>{
+  const {id}=req.params;
+  const {title, description, startDate, endDate, status, developers}=req.body;
+  const project=await checkProjectExists(id);
+
+  await checkProjectLeader(project.projectLeader, req.user.id);
+const newProjectData={title, description, startDate, endDate, status, developers}
+
+const updateProject=await Project.findByIdAndUpdate(id, )
 
 })
 
 
-const checkProjectExists = async (projectId) => {
- try{
-  const project = await Project.findOne({ _id:projectId });
-  if (!project) {
-    throw new ApiError(400, "Project you are looking for does not exist!");
+ const deleteProject = asyncHandler(
+  async (req, res) => {
+      const {id } = req.params;
+  
+      const project = await checkProjectExists(id);
+
+      // check project leader
+      await checkProjectLeader(project.projectLeader, req.user.id);
+
+      // delete project
+      await project.deleteOne({ _id:id });
+
+    res.status(200).json(new ApiResponse(200, "Project deleted successfully") )
   }
-  return project;
- }catch(error){
-  console.log(error)
-  throw new ApiError(400, error.message)
- }
+);
+
+const checkAssignDeveloper = asyncHandler(async (req, res) => {
+  const { id } = req.body;
+  const { projectId } = req.params;
+  const project = await checkProjectExists(projectId);
+
+  const assign = project.developers.includes(id);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        assign,
+        "Already this project is assigned to the developr "
+      )
+    );
+});
+
+
+
+const checkProjectExists = async (
+  projectId) => {
+  try {
+    console.log(projectId ,"_______")
+    const project = await Project.findOne({ _id: projectId });
+
+    
+    if (!project) {
+      throw new ApiError(400, "Project you are looking for does not exist!");
+    }
+    return project;
+  } catch (error) {
+    console.log(error);
+    throw new ApiError(400, error.message);
+  }
+ 
 };
+console.log(checkProjectExists('67693b9325f0809e67f6abc6'));
+
 const checkProjectLeader = async (projectLeaderId, currentUserId) => {
   if (projectLeaderId != currentUserId) {
     throw new ApiError(
@@ -157,11 +257,14 @@ const checkProjectLeader = async (projectLeaderId, currentUserId) => {
   }
 };
 
-const checkProjectDeveloper=async(project, currentUserId)=>{
-  if(!project.developers.include(currentUserId)){
-    throw new ApiError(400,"You don't have permission to access this resources!")
+const checkProjectDeveloper = async (project, currentUserId) => {
+  if (!project.developers.include(currentUserId)) {
+    throw new ApiError(
+      400,
+      "You don't have permission to access this resources!"
+    );
   }
-}
+};
 export {
   createProject,
   checkProjectLeader,
@@ -173,5 +276,7 @@ export {
   getAllProjects,
   getAllCompletedProjects,
   getAllInprogressProjects,
-  checkAssignDeveloper
+  checkAssignDeveloper,
+  removeAssignDeveloper,
+  deleteProject
 };

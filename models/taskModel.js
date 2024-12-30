@@ -26,11 +26,15 @@ const taskSchema = new mongoose.Schema(
         message: "Please select correct priority for task",
       },
     },
+    projectId:{
+         type: mongoose.Schema.Types.ObjectId,
+              ref: "Project",
+    },
     status: {
       type: String,
       default: "To Do",
       enum: {
-        values: ["To Do", "Progress", "Review", "Reassigned", "Completed"],
+        values: ["To Do", "In Progress", "Review", "Reassigned", "Completed"],
         message: "Please select correct status for task",
       },
     },
@@ -45,11 +49,7 @@ const taskSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    projectId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
-      // required: true,
-    },
+   
     createdAt: {
       type: Date,
       default: Date.now,
