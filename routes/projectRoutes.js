@@ -1,5 +1,5 @@
 import {Router} from "express";
-import { createProject, deleteProject, getAllCompletedProjects, getAllInprogressProjects, getAllProjects, getAllProjectsByDevId, getAllTodoProjects, getProjectById, removeAssignDeveloper } from "../controllers/projectController.js";
+import { assignDeveloper, createProject, deleteProject, getAllCompletedProjects, getAllInprogressProjects, getAllProjects, getAllProjectsByDevId, getAllTodoProjects, getProjectById, removeAssignDeveloper } from "../controllers/projectController.js";
 import { verifyJWT } from "../middleware/authMiddleware.js";
 
 
@@ -13,6 +13,7 @@ projectRoutes.route("/get-all-completed-projects").get(getAllCompletedProjects);
 projectRoutes.route("/get-all-projects").get(getAllProjects);
 projectRoutes.route("/get-project/:id").get(getProjectById);
 projectRoutes.route("/remove-dev/:id").post(verifyJWT, removeAssignDeveloper);
+projectRoutes.route("/add-dev/:id").post(verifyJWT, assignDeveloper);
 projectRoutes.route("/delete-project/:id").post(verifyJWT, deleteProject)
 // projectRoutes.route()
 export default projectRoutes;

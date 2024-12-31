@@ -122,6 +122,27 @@ const getProjectById = asyncHandler(async (req, res) => {
         },
       },
       {
+        '$lookup': {
+          'from': 'users', 
+          'localField': 'projectLeader', 
+          'foreignField': '_id', 
+          'as': 'projectLeader', 
+          'pipeline': [
+            {
+              '$project': {
+                'name': 1, 
+                'position': 1
+              }
+            }
+          ]
+        }
+      }, {
+        '$unwind': {
+          'path': '$projectLeader'
+        }
+      },
+    
+      {
         $lookup: {
           from: 'users', 
           let: { developerIds: '$developers' }, 
@@ -154,6 +175,38 @@ const projectData=project[0];
     throw new ApiError(500, error.message);
   }
 });
+
+// assign developer
+const assignDeveloper =asyncHandler(
+  async (req,res) => {
+    const {id}=req.params;
+    const {devId}=req.body;
+
+    const project= await checkProjectExists(id);
+// console.log("_____________", project)
+await checkProjectLeader(project.projectLeader, req.user.id);
+
+const user = await checkUserExistsById(devId);
+console.log("____________", user)
+
+      // find by project id and assign developer to project
+      const updateProject = await Project.findOneAndUpdate(
+          {
+              _id: project.id,
+          },
+          {
+              $addToSet: {
+                  developers: [user.id],
+              },
+          },
+          {new:true}
+      );
+      res.status(200).json(new ApiResponse(200,updateProject, "developer added successfully"));
+    
+  }
+);
+
+
 
 const removeAssignDeveloper=asyncHandler(async(req,res)=>{
 const {id}=req.params;
@@ -246,7 +299,7 @@ const checkProjectExists = async (
   }
  
 };
-console.log(checkProjectExists('67693b9325f0809e67f6abc6'));
+// console.log(checkProjectExists('67693b9325f0809e67f6abc6'));
 
 const checkProjectLeader = async (projectLeaderId, currentUserId) => {
   if (projectLeaderId != currentUserId) {
@@ -278,5 +331,6 @@ export {
   getAllInprogressProjects,
   checkAssignDeveloper,
   removeAssignDeveloper,
+  assignDeveloper,
   deleteProject
 };
