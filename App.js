@@ -13,20 +13,20 @@ import taskRouter from "./routes/taskRoutes.js";
 
 const app = express();
 
-const corsOptions = {
-  credentials: true,
-  origin: ["https://hrm.kairaatechserve.com/","http://localhost:5173/"],
+// const corsOptions = {
+//   credentials: true,
+//   origin: ["https://hrm.kairaatechserve.com/","http://localhost:5173/"],
  
-};
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  // res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "PUT,POST,PATCH,DELETE,GET");
-  // res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept,Authorization");
-  return next()
-})
+// };
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   // res.header("Access-Control-Allow-Credentials", "true");
+//   res.header("Access-Control-Allow-Methods", "PUT,POST,PATCH,DELETE,GET");
+//   // res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept,Authorization");
+//   return next()
+// })
 
-// app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
