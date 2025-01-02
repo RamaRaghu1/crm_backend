@@ -14,8 +14,11 @@ import taskRouter from "./routes/taskRoutes.js";
 const app = express();
 
 const corsOptions = {
-  credentials: false,
-  origin: "https://hrm.kairaatechserve.com/",
+  credentials: true,
+  origin: [
+    "https://hrm.kairaatechserve.com/",
+    "https://hrm.kairaatechserve.com"
+  ],
  
 };
 // app.use((req, res, next) => {
