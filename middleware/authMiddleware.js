@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 import mongoose from "mongoose";
 
+// console.log("_____________________", process.env.ACCESS_TOKEN_SECRET)
+
 export const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
     const token =
