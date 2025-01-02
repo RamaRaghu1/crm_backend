@@ -22,4 +22,5 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         run :  npm i 
+      # - run: npm i dotenv
     # - run: pm2 start --env prod
