@@ -26,13 +26,13 @@ const updateAttendance = asyncHandler(async (req, res, next) => {
       return next(new ApiError(404, "Employee not found"));
     }
 
-    // Check if attendance for the same date exists
+   
     const existingAttendanceIndex = employee.attendance.findIndex(
       (entry) => new Date(entry.date).toISOString().split('T')[0] === date
     );
 
     if (existingAttendanceIndex !== -1) {
-      // Update the existing attendance entry
+  
       employee.attendance[existingAttendanceIndex].status = status;
     } else {
       // Add a new attendance entry
