@@ -20,9 +20,14 @@ const corsOptions = {
   preflightContinue: true,
   optionsSuccessStatus: 204
 };
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "PUT,POST,PATCH,DELETE,GET");
+  res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept,Authorization");
+  return next()
+})
 
-
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
