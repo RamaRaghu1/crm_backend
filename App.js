@@ -15,7 +15,7 @@ const app = express();
 
 const corsOptions = {
   credentials: true,
-  origin: ['http://localhost:5173'],
+  origin: ['*'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   preflightContinue: true,
   optionsSuccessStatus: 204
