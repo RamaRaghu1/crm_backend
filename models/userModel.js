@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema(
    
     phone: { type: String, default: "" },
     dateOfBirth: { type: Date, default: "" },
-    refreshToken: { type: String, default: "" },
+    // refreshToken: { type: String, default: "" },
   },
   { timestamps: true }
 );
@@ -79,16 +79,16 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
-// Generate Refresh Token
-userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign(
-    { _id: this._id, email: this.email },
-    process.env.REFRESH_TOKEN_SECRET,
-    {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
-    }
-  );
-};
+// // Generate Refresh Token
+// userSchema.methods.generateRefreshToken = function () {
+//   return jwt.sign(
+//     { _id: this._id, email: this.email },
+//     process.env.REFRESH_TOKEN_SECRET,
+//     {
+//       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+//     }
+//   );
+// };
 
 // Match Entered Password
 userSchema.methods.matchPassword = async function (enteredPassword) {

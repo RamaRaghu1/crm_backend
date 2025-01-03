@@ -61,6 +61,10 @@ const applyForLeave = asyncHandler(async (req, res, next) => {
         .filter((leave) => leave.leaveType === "casual-leave")
         .reduce((sum, leave) => sum + leave.leaveDays, 0);
 
+        const unpaidLeaveDays = leavesThisMonth
+      .filter((leave) => leave.leaveType === "unpaid-leave")
+      .reduce((sum, leave) => sum + leave.leaveDays, 0);
+
       if (leaveDate.leaveType === "sick-leave" && sickLeaveDays + leaveDays > 3) {
         return next(
           new ApiError(
@@ -71,11 +75,23 @@ const applyForLeave = asyncHandler(async (req, res, next) => {
         );
       }
 
+      
+
       if (leaveDate.leaveType === "casual-leave" && casualLeaveDays + leaveDays > 2) {
         return next(
           new ApiError(
             400,
               "You can't take more than 2 casual leaves per month."
+            
+          )
+        );
+      }
+
+      if (leaveDate.leaveType === "unpaid-leave" && unpaidLeaveDays + leaveDays > 6) {
+        return next(
+          new ApiError(
+            400,
+              "You can't take more than 6 lop per month."
             
           )
         );

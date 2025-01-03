@@ -17,7 +17,9 @@ const corsOptions = {
   credentials: true,
   origin: [
     "https://hrm.kairaatechserve.com/",
-    "https://hrm.kairaatechserve.com"
+    "https://hrm.kairaatechserve.com",
+    "http://localhost:5173/",
+    "http://localhost:5173"
   ],
  
 };
