@@ -7,6 +7,7 @@ import { checkProjectExists, checkProjectLeader } from "./projectController.js";
 import { checkUserExistsById } from "./userController.js";
 import Task from "../models/taskModel.js";
 import mongoose from "mongoose";
+
 export const createTask = asyncHandler(async (req, res) => {
   try {
     const { title, description,projectId, startDate, endDate, developer } = req.body;
@@ -15,7 +16,7 @@ export const createTask = asyncHandler(async (req, res) => {
       new mongoose.Types.ObjectId(projectId)
     );
 
-    console.log("_____", project);
+    // console.log("_____", project);
     await checkProjectLeader(project.projectLeader, req.user.id);
     const user = await checkUserExistsById(req.user.id);
 
@@ -33,7 +34,7 @@ export const createTask = asyncHandler(async (req, res) => {
       .status(201)
       .json(new ApiResponse(201, task, "Task assigned successfully"));
   } catch (error) {
-    console.log("_________________", error);
+    // console.log("_________________", error);
     throw new ApiError(500, error.message);
   }
 });
@@ -102,6 +103,50 @@ export const getUserAllTask = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, tasks, "tasks fetched successfully"));
 });
 
+
+export const getTaskDetails = asyncHandler(async (req, res) => {
+      const { taskId } = req.body;
+
+      // check task authorization -> project leader and developer
+      const task = await checkTaskAuthorization(taskId, req.user.id);
+
+    res.status(200).json(new ApiResponse(200, task, "task details fetched successfully"))
+  }
+);
+
+export const checkTaskAuthorization = async (
+  taskId,
+  userId
+) => {
+  const { project, task } = await checkTaskExistsInProject(taskId);
+  const currUser = await User.findOne({ _id: userId });
+  console.log("_________currUser_",currUser)
+  if (task?.developer == userId || project.projectLeader == userId || currUser?.isSuperUser) {
+      return task;
+  } else {
+    throw new ApiError(500, "You don't have permission to access this resources!")
+  }
+};
+
+export const checkTaskExistsInProject = async (taskId) => {
+  // check task existence
+  const task = await checkTaskExists(taskId);
+console.log("task_____________", task)
+  // check project existence
+  const project = await checkProjectExists(task.projectId);
+console.log("project__________", project)
+  // check task exists in the project
+
+  console.log(task?.projectId.toString() !== project._id.toString())
+  if (task?.projectId.toString() !== project._id.toString()) {
+    throw new ApiError(404, "Task does not exist in this project!");
+  }
+
+  return { project,task };
+};
+
+
+
 const checkTaskExists = async (id) => {
   const task = await Task.findOne({
     _id: id,
@@ -114,7 +159,7 @@ const checkTaskExists = async (id) => {
 const checkTaskDeveloper = async (id, currUserId) => {
   const task = await checkTaskExists(id);
 
-  console.log("__________________", task);
+  // console.log("__________________", task);
   if (task.developer != currUserId) {
     throw new ApiError(400, "You don't have permission to access task!");
   }

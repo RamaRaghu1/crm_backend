@@ -67,7 +67,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-console.log("_______________hghjgjh_", process.env.ACCESS_TOKEN_EXPIRY)
+// console.log("_______________hghjgjh_", process.env.ACCESS_TOKEN_EXPIRY)
 // Generate Access Token
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(

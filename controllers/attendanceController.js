@@ -55,12 +55,12 @@ const updateAttendance = asyncHandler(async (req, res, next) => {
 const getAttendanceData=asyncHandler(async(req,res)=>{
   try{
 const {date}=req.body;
-console.log("Received date on backend:", date);
+// console.log("Received date on backend:", date);
 
  const targetDate = new Date(date.date);
 
 
- console.log("Converted targetDate (time stripped):", targetDate);
+//  console.log("Converted targetDate (time stripped):", targetDate);
 
 
  const employees = await User.aggregate([
@@ -76,7 +76,7 @@ console.log("Received date on backend:", date);
      }
    }
  ]);
-console.log(employees)
+// console.log(employees)
  res.status(201).json( new ApiResponse(201, employees, "Attendance data fetched successfully"));
 
 

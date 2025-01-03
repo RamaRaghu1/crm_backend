@@ -82,12 +82,11 @@ const registerUser = asyncHandler(async (req, res) => {
     joiningDate,
     position,
     team,
+    branch,
     isSuperUser,
-    address,
-    dateOfBirth,
-    phone,
-  } = req.body;
 
+  } = req.body;
+console.log("_______", req.body);
   const userCount = await User.countDocuments();
   const employeeId = `KT${userCount + 1}`;
 
@@ -99,9 +98,9 @@ const registerUser = asyncHandler(async (req, res) => {
       joiningDate,
       position,
       team,
+      branch,
       isSuperUser,
-      dateOfBirth,
-      phone,
+ 
     ].some((field) => field?.toString()?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required!");
@@ -122,9 +121,8 @@ const registerUser = asyncHandler(async (req, res) => {
       position,
       team,
       isSuperUser,
-
-      dateOfBirth,
-      phone,
+      branch,
+    
     });
 
     const createdUser = await User.findById(user._id);
@@ -334,7 +332,7 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
     //     url:user?.avatar.url
     //   }
     // }
-    console.log("_______________", userId);
+    // console.log("_______________", userId);
 
     const updatedUser = await User.findByIdAndUpdate(userId, { $set: data });
     const InfoUser = await User.findById(userId);

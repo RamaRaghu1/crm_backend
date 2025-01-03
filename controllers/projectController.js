@@ -5,6 +5,7 @@ import Project from "../models/projectModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import ApiFeatures from "../utils/apiFeature.js";
 import mongoose from "mongoose";
+import User from "../models/userModel.js";
 import { checkUserExistsById } from "./userController.js";
 const createProject = asyncHandler(async (req, res) => {
   try {
@@ -16,7 +17,7 @@ const createProject = asyncHandler(async (req, res) => {
       projectLeader,
     };
 
-    console.log("vfhjbghj", projectData);
+    // console.log("vfhjbghj", projectData);
 
     const project = await Project.create(projectData);
 
@@ -24,7 +25,7 @@ const createProject = asyncHandler(async (req, res) => {
       .status(201)
       .json(new ApiResponse(201, project, "project created successfully"));
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     throw new ApiError(500, error.message);
   }
 });
@@ -58,50 +59,50 @@ const getAllProjects = asyncHandler(async (req, res) => {
   }
 });
 
-const getAllTodoProjects = asyncHandler(async (req, res) => {
-  try {
-    const { id } = req.body;
+// const getAllTodoProjects = asyncHandler(async (req, res) => {
+//   try {
+//     const { id } = req.body;
 
-    const projects = await Project.find({ status: "Todo", developers: id });
+//     const projects = await Project.find({ status: "Todo", developers: id });
 
-    res
-      .status(200)
-      .json(new ApiResponse(200, projects, "projects fetched successfully"));
-  } catch (error) {
-    throw new ApiError(500, error.message);
-  }
-});
+//     res
+//       .status(200)
+//       .json(new ApiResponse(200, projects, "projects fetched successfully"));
+//   } catch (error) {
+//     throw new ApiError(500, error.message);
+//   }
+// });
 
-const getAllInprogressProjects = asyncHandler(async (req, res) => {
-  try {
-    const { id } = req.body;
+// const getAllInprogressProjects = asyncHandler(async (req, res) => {
+//   try {
+//     const { id } = req.body;
 
-    const projects = await Project.find({ status: "Progress", developers: id });
+//     const projects = await Project.find({ status: "Progress", developers: id });
 
-    res
-      .status(200)
-      .json(new ApiResponse(200, projects, "projects fetched successfully"));
-  } catch (error) {
-    throw new ApiError(500, error.message);
-  }
-});
+//     res
+//       .status(200)
+//       .json(new ApiResponse(200, projects, "projects fetched successfully"));
+//   } catch (error) {
+//     throw new ApiError(500, error.message);
+//   }
+// });
 
-const getAllCompletedProjects = asyncHandler(async (req, res) => {
-  try {
-    const { id } = req.body;
+// const getAllCompletedProjects = asyncHandler(async (req, res) => {
+//   try {
+//     const { id } = req.body;
 
-    const projects = await Project.find({
-      status: "Completed",
-      developers: id,
-    });
+//     const projects = await Project.find({
+//       status: "Completed",
+//       developers: id,
+//     });
 
-    res
-      .status(200)
-      .json(new ApiResponse(200, projects, "projects fetched successfully"));
-  } catch (error) {
-    throw new ApiError(500, error.message);
-  }
-});
+//     res
+//       .status(200)
+//       .json(new ApiResponse(200, projects, "projects fetched successfully"));
+//   } catch (error) {
+//     throw new ApiError(500, error.message);
+//   }
+// });
 
 const getProjectById = asyncHandler(async (req, res) => {
   try {
@@ -115,152 +116,157 @@ const getProjectById = asyncHandler(async (req, res) => {
       },
       {
         $lookup: {
-          from: 'tasks',
-          localField: '_id',
-          foreignField: 'projectId',
-          as: 'tasks',
+          from: "tasks",
+          localField: "_id",
+          foreignField: "projectId",
+          as: "tasks",
         },
       },
       {
-        '$lookup': {
-          'from': 'users', 
-          'localField': 'projectLeader', 
-          'foreignField': '_id', 
-          'as': 'projectLeader', 
-          'pipeline': [
+        $lookup: {
+          from: "users",
+          localField: "projectLeader",
+          foreignField: "_id",
+          as: "projectLeader",
+          pipeline: [
             {
-              '$project': {
-                'name': 1, 
-                'position': 1
-              }
-            }
-          ]
-        }
-      }, {
-        '$unwind': {
-          'path': '$projectLeader'
-        }
+              $project: {
+                name: 1,
+                position: 1,
+              },
+            },
+          ],
+        },
       },
-    
+      {
+        $unwind: {
+          path: "$projectLeader",
+        },
+      },
+
       {
         $lookup: {
-          from: 'users', 
-          let: { developerIds: '$developers' }, 
+          from: "users",
+          let: { developerIds: "$developers" },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $in: ['$_id', '$$developerIds'], 
+                  $in: ["$_id", "$$developerIds"],
                 },
               },
             },
             {
               $project: {
-                name: 1, 
+                name: 1,
                 position: 1,
               },
             },
           ],
-          as: 'developers',
+          as: "developers",
         },
-      }
-      
+      },
     ]);
-    
-const projectData=project[0];
+
+    const projectData = project[0];
     res
       .status(200)
-      .json(new ApiResponse(200 ,projectData,  "projects fetched successfully"));
+      .json(new ApiResponse(200, projectData, "projects fetched successfully"));
   } catch (error) {
     throw new ApiError(500, error.message);
   }
 });
 
 // assign developer
-const assignDeveloper =asyncHandler(
-  async (req,res) => {
-    const {id}=req.params;
-    const {devId}=req.body;
+const assignDeveloper = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { devId } = req.body;
 
-    const project= await checkProjectExists(id);
-// console.log("_____________", project)
-await checkProjectLeader(project.projectLeader, req.user.id);
+  const project = await checkProjectExists(id);
+  // console.log("_____________", project)
+  await checkProjectLeader(project.projectLeader, req.user.id);
 
-const user = await checkUserExistsById(devId);
-console.log("____________", user)
+  const user = await checkUserExistsById(devId);
+  // console.log("____________", user)
 
-      // find by project id and assign developer to project
-      const updateProject = await Project.findOneAndUpdate(
-          {
-              _id: project.id,
-          },
-          {
-              $addToSet: {
-                  developers: [user.id],
-              },
-          },
-          {new:true}
-      );
-      res.status(200).json(new ApiResponse(200,updateProject, "developer added successfully"));
-    
-  }
-);
-
-
-
-const removeAssignDeveloper=asyncHandler(async(req,res)=>{
-const {id}=req.params;
-const {devId}=req.body;
-console.log("user____", devId)
-const project= await checkProjectExists(id);
-// console.log("_____________", project)
-await checkProjectLeader(project.projectLeader, req.user.id);
-
-const user = await checkUserExistsById(devId);
-console.log("____________", user)
-const updateProject = await Project.findOneAndUpdate(
-  {
+  // find by project id and assign developer to project
+  const updateProject = await Project.findOneAndUpdate(
+    {
       _id: project.id,
-  },
-  {
-      $pull: {
-          developers: user.id,
+    },
+    {
+      $addToSet: {
+        developers: [user.id],
       },
-  },
-  {new:true}
-);
+    },
+    { new: true }
+  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, updateProject, "developer added successfully"));
+});
 
-res.status(200).json(new ApiResponse(200,updateProject, "developer removed successfully"));
-})
+const removeAssignDeveloper = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { devId } = req.body;
+  // console.log("user____", devId)
+  const project = await checkProjectExists(id);
+  // console.log("_____________", project)
+  await checkProjectLeader(project.projectLeader, req.user.id);
 
-const updateProject=asyncHandler(async(req,res)=>{
-  const {id}=req.params;
-  const {title, description, startDate, endDate, status, developers}=req.body;
-  const project=await checkProjectExists(id);
+  const user = await checkUserExistsById(devId);
+  // console.log("____________", user)
+  const updateProject = await Project.findOneAndUpdate(
+    {
+      _id: project.id,
+    },
+    {
+      $pull: {
+        developers: user.id,
+      },
+    },
+    { new: true }
+  );
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, updateProject, "developer removed successfully")
+    );
+});
+
+const updateProject = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { title, description, startDate, endDate, status, developers } =
+    req.body;
+  const project = await checkProjectExists(id);
 
   await checkProjectLeader(project.projectLeader, req.user.id);
-const newProjectData={title, description, startDate, endDate, status, developers}
+  const newProjectData = {
+    title,
+    description,
+    startDate,
+    endDate,
+    status,
+    developers,
+  };
 
-const updateProject=await Project.findByIdAndUpdate(id, )
+  const updateProject = await Project.findByIdAndUpdate(id);
+});
 
-})
+const deleteProject = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
+  const project = await checkProjectExists(id);
 
- const deleteProject = asyncHandler(
-  async (req, res) => {
-      const {id } = req.params;
-  
-      const project = await checkProjectExists(id);
+  // check project leader
+  await checkProjectLeader(project.projectLeader, req.user.id);
 
-      // check project leader
-      await checkProjectLeader(project.projectLeader, req.user.id);
+  // delete project
+  await project.deleteOne({ _id: id });
 
-      // delete project
-      await project.deleteOne({ _id:id });
-
-    res.status(200).json(new ApiResponse(200, "Project deleted successfully") )
-  }
-);
+  res.status(200).json(new ApiResponse(200, "Project deleted successfully"));
+});
 
 const checkAssignDeveloper = asyncHandler(async (req, res) => {
   const { id } = req.body;
@@ -280,29 +286,26 @@ const checkAssignDeveloper = asyncHandler(async (req, res) => {
     );
 });
 
-
-
-const checkProjectExists = async (
-  projectId) => {
+const checkProjectExists = async (projectId) => {
   try {
-    console.log(projectId ,"_______")
+    // console.log(projectId ,"_______")
     const project = await Project.findOne({ _id: projectId });
 
-    
     if (!project) {
       throw new ApiError(400, "Project you are looking for does not exist!");
     }
     return project;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     throw new ApiError(400, error.message);
   }
- 
 };
 // console.log(checkProjectExists('67693b9325f0809e67f6abc6'));
 
 const checkProjectLeader = async (projectLeaderId, currentUserId) => {
-  if (projectLeaderId != currentUserId) {
+  const currUser = await User.findOne({ _id: currentUserId });
+  console.log("_______",currUser)
+  if (projectLeaderId != currentUserId || !currUser?.isSuperUser) {
     throw new ApiError(
       400,
       "You don't have permission to access this resources!"
@@ -324,13 +327,13 @@ export {
   checkProjectExists,
   checkProjectDeveloper,
   getAllProjectsByDevId,
-  getAllTodoProjects,
+  // getAllTodoProjects,
   getProjectById,
   getAllProjects,
-  getAllCompletedProjects,
-  getAllInprogressProjects,
+  // getAllCompletedProjects,
+  // getAllInprogressProjects,
   checkAssignDeveloper,
   removeAssignDeveloper,
   assignDeveloper,
-  deleteProject
+  deleteProject,
 };

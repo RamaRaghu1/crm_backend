@@ -39,8 +39,8 @@ const applyForLeave = asyncHandler(async (req, res, next) => {
     const currentMonthStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
     const currentMonthEnd = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
 
-    console.log("month", currentMonthStart);
-    console.log("monthEnd", currentMonthEnd);
+    // console.log("month", currentMonthStart);
+    // console.log("monthEnd", currentMonthEnd);
    
     const existingLeaves = await Leave.findOne({ id: uid });
 
