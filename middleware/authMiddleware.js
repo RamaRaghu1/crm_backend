@@ -9,8 +9,7 @@ import mongoose from "mongoose";
 export const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
     const token =
-      req.cookies?.accessToken ||
-     localStorage.getItem("accessToken");
+      req.cookies?.accessToken;
 
   
     if (!token) {
