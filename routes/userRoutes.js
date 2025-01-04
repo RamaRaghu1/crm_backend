@@ -6,7 +6,7 @@ import { verifyJWT } from "../middleware/authMiddleware.js";
 const userRouter=Router();
 
 
-userRouter.route("/register").post(registerUser);
+userRouter.route("/register").post(verifyJWT,registerUser);
 userRouter.route("/me").get(verifyJWT,getUserInfo);
 // userRouter.route("/refresh-token").post(refreshAccessToken)
 userRouter.route("/login").post(loginUser);

@@ -120,7 +120,7 @@ export const checkTaskAuthorization = async (
 ) => {
   const { project, task } = await checkTaskExistsInProject(taskId);
   const currUser = await User.findOne({ _id: userId });
-  console.log("_________currUser_",currUser)
+  // console.log("_________currUser_",currUser)
   if (task?.developer == userId || project.projectLeader == userId || currUser?.isSuperUser) {
       return task;
   } else {
@@ -129,15 +129,15 @@ export const checkTaskAuthorization = async (
 };
 
 export const checkTaskExistsInProject = async (taskId) => {
-  // check task existence
-  const task = await checkTaskExists(taskId);
-console.log("task_____________", task)
-  // check project existence
-  const project = await checkProjectExists(task.projectId);
-console.log("project__________", project)
-  // check task exists in the project
 
-  console.log(task?.projectId.toString() !== project._id.toString())
+  const task = await checkTaskExists(taskId);
+// console.log("task_____________", task)
+  
+  const project = await checkProjectExists(task.projectId);
+// console.log("project__________", project)
+
+
+  // console.log(task?.projectId.toString() !== project._id.toString())
   if (task?.projectId.toString() !== project._id.toString()) {
     throw new ApiError(404, "Task does not exist in this project!");
   }
