@@ -304,7 +304,7 @@ const checkProjectExists = async (projectId) => {
 
 const checkProjectLeader = async (projectLeaderId, currentUserId) => {
   const currUser = await User.findOne({ _id: currentUserId });
-  console.log("_______",currUser)
+  // console.log("_______",currUser)
   if (projectLeaderId != currentUserId || !currUser?.isSuperUser) {
     throw new ApiError(
       400,

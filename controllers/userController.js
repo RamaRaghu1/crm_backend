@@ -86,7 +86,7 @@ const registerUser = asyncHandler(async (req, res) => {
     isSuperUser,
 
   } = req.body;
-console.log("_______", req.body);
+// console.log("_______", req.body);
   const userCount = await User.countDocuments();
   const employeeId = `KT${userCount + 1}`;
 
@@ -169,6 +169,7 @@ const loginUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
+    maxAge: 1 * 24 * 60 * 60 * 1000
     // domain:"http://localhost:5173/" // try "lax" or "strict" for testing
     // remove domain for local testing
   };
@@ -188,7 +189,7 @@ const loginUser = asyncHandler(async (req, res) => {
         new ApiResponse(
           200,
           {
-            // user: loggedInUser,
+            user: loggedInUser,
             accessToken,
             // refreshToken,
           },
