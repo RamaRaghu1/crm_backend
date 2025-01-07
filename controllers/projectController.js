@@ -32,12 +32,12 @@ const createProject = asyncHandler(async (req, res) => {
 
 const getAllProjectsByDevId = asyncHandler(async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     // find specific developer project
     const projects = await Project.find({
       developers: id,
-    });
+    }).sort({ createdAt: -1 });;
 
     return res
       .status(200)
@@ -49,7 +49,7 @@ const getAllProjectsByDevId = asyncHandler(async (req, res) => {
 
 const getAllProjects = asyncHandler(async (req, res) => {
   try {
-    const projects = await Project.find({});
+    const projects = await Project.find({}).sort({ createdAt: -1 });;
 
     return res
       .status(200)
