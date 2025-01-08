@@ -213,7 +213,7 @@ const getUserInfo = asyncHandler(async (req, res) => {
 
     // Fetch user information from the database, excluding sensitive fields like password
     const user = await User.findById({_id:userId}).select("-password");
-console.log("______",user)
+// console.log("______",user)
     if (!user) {
       throw new ApiError(404, "User not found");
     }

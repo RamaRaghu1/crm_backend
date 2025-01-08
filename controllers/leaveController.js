@@ -171,7 +171,7 @@ const leaveEmployee= asyncHandler(async(req,res)=>{
               leave_status: { $in: "pending" },
             },
           },
-    }, {leaveSets:1, employeeName:1, employeeId:1})
+    }, {leaveSets:1, employeeName:1, employeeId:1}).sort({ createdAt: -1 });
 
     if(!foundUser){
         throw new ApiError(404,"Couldn't find any user!")
@@ -189,7 +189,7 @@ const getLeavesById=asyncHandler(async(req,res)=>{
       const { id } = req.params;
   
     
-      const leaves = await Leave.find({id}).select({leaveSets:1})
+      const leaves = await Leave.find({id}).select({leaveSets:1}).sort({ createdAt: -1 })
   
     
       if (!leaves.length) {

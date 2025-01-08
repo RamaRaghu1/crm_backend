@@ -265,7 +265,7 @@ const deleteProject = asyncHandler(async (req, res) => {
   // delete project
   await project.deleteOne({ _id: id });
 
-  res.status(200).json(new ApiResponse(200, "Project deleted successfully"));
+  res.status(200).json(new ApiResponse({message:"Project deleted successfully"}));
 });
 
 const checkAssignDeveloper = asyncHandler(async (req, res) => {
@@ -305,7 +305,7 @@ const checkProjectExists = async (projectId) => {
 const checkProjectLeader = async (projectLeaderId, currentUserId) => {
   const currUser = await User.findOne({ _id: currentUserId });
   // console.log("_______",currUser)
-  if (projectLeaderId != currentUserId || !currUser?.isSuperUser) {
+  if (projectLeaderId != currentUserId && !currUser?.isSuperUser) {
     throw new ApiError(
       400,
       "You don't have permission to access this resources!"
