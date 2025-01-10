@@ -237,7 +237,7 @@ const removeAssignDeveloper = asyncHandler(async (req, res) => {
 
 const updateProject = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { title, description, startDate, endDate, status, developers } =
+  const { title, description, startDate, endDate, status, developers ,projectLeader} =
     req.body;
   const project = await checkProjectExists(id);
 
@@ -248,10 +248,13 @@ const updateProject = asyncHandler(async (req, res) => {
     startDate,
     endDate,
     status,
+    projectLeader,
     developers,
   };
 
-  const updateProject = await Project.findByIdAndUpdate(id);
+  const updateProject = await Project.findByIdAndUpdate(id, newProjectData, {new:true});
+  res.status(200).json(new ApiResponse(200, updateProject, "Project updated successfully"));
+
 });
 
 const deleteProject = asyncHandler(async (req, res) => {
@@ -265,7 +268,7 @@ const deleteProject = asyncHandler(async (req, res) => {
   // delete project
   await project.deleteOne({ _id: id });
 
-  res.status(200).json(new ApiResponse({message:"Project deleted successfully"}));
+  res.status(200).json(new ApiResponse(200, null, "Project deleted successfully"));
 });
 
 const checkAssignDeveloper = asyncHandler(async (req, res) => {
@@ -336,4 +339,5 @@ export {
   removeAssignDeveloper,
   assignDeveloper,
   deleteProject,
+  updateProject
 };

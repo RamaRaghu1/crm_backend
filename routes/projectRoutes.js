@@ -1,5 +1,5 @@
 import {Router} from "express";
-import { assignDeveloper, createProject, deleteProject,  getAllProjects, getAllProjectsByDevId, getProjectById, removeAssignDeveloper } from "../controllers/projectController.js";
+import { assignDeveloper, createProject, deleteProject,  getAllProjects, getAllProjectsByDevId, getProjectById, removeAssignDeveloper, updateProject } from "../controllers/projectController.js";
 import { verifyJWT } from "../middleware/authMiddleware.js";
 
 
@@ -12,5 +12,6 @@ projectRoutes.route("/get-project/:id").get(verifyJWT, getProjectById);
 projectRoutes.route("/remove-dev/:id").post(verifyJWT, removeAssignDeveloper);
 projectRoutes.route("/add-dev/:id").post(verifyJWT, assignDeveloper);
 projectRoutes.route("/delete-project/:id").post(verifyJWT, deleteProject)
+projectRoutes.route("/update-project/:id").post(verifyJWT, updateProject)
 
 export default projectRoutes;

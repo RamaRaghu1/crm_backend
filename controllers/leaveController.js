@@ -39,8 +39,7 @@ const applyForLeave = asyncHandler(async (req, res, next) => {
     const currentMonthStart = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
     const currentMonthEnd = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
 
-    // console.log("month", currentMonthStart);
-    // console.log("monthEnd", currentMonthEnd);
+   
    
     const existingLeaves = await Leave.findOne({ id: uid });
 
@@ -106,6 +105,7 @@ const applyForLeave = asyncHandler(async (req, res, next) => {
       leaveReason: leaveDate.leaveReason || "",
       leaveDuration: leaveDate.leaveDuration,
       leave_status: "pending",
+      createdAt:new Date()
     };
 
  
@@ -134,15 +134,15 @@ const applyForLeave = asyncHandler(async (req, res, next) => {
 
 
 const getLeaveSummary = asyncHandler(async (req, res, next) => {
-  const { userId } = req.body;
+  const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ApiError(400, "Invalid User ID");
   }
 
   try {
     const leaveSummary = await Leave.aggregate([
-      { $match: { employeeId: userId } }, 
+      { $match: { id: new mongoose.Types.ObjectId(id) } }, 
       { $unwind: "$leaveSets" }, 
       {
         $match: {
@@ -164,22 +164,36 @@ const getLeaveSummary = asyncHandler(async (req, res, next) => {
   }
 });
 
-const leaveEmployee= asyncHandler(async(req,res)=>{
-    const foundUser=await Leave.find({
-        leaveSets: {
-            $elemMatch: {
-              leave_status: { $in: "pending" },
-            },
+const leaveEmployee = asyncHandler(async (req, res) => {
+  const foundUser = await Leave.find(
+      {
+          leaveSets: {
+              $elemMatch: {
+                  leave_status: "pending",
+              },
           },
-    }, {leaveSets:1, employeeName:1, employeeId:1}).sort({ createdAt: -1 });
+      },
+      {
+          leaveSets: {
+              $filter: {
+                  input: "$leaveSets",
+                  as: "leaveSet",
+                  cond: { $eq: ["$$leaveSet.leave_status", "pending"] },
+              },
+          },
+          employeeName: 1,
+          employeeId: 1,
+      }
+  ).sort({ createdAt: -1 });
 
-    if(!foundUser){
-        throw new ApiError(404,"Couldn't find any user!")
-    }
+  if (!foundUser || foundUser.length === 0) {
+      throw new ApiError(404, "Couldn't find any user!");
+  }
+
+  return res.status(200).json(new ApiResponse(200, foundUser, "Users found"));
+});
 
 
-    return res.status(200).json(new ApiResponse(200, foundUser, "Users found"))
-})
 
 
 const getLeavesById=asyncHandler(async(req,res)=>{
@@ -189,7 +203,7 @@ const getLeavesById=asyncHandler(async(req,res)=>{
       const { id } = req.params;
   
     
-      const leaves = await Leave.find({id}).select({leaveSets:1}).sort({ createdAt: -1 })
+      const leaves = await Leave.find({id}).select({leaveSets:1, createdAt:1}).sort({ createdAt: -1 })
   
     
       if (!leaves.length) {
@@ -207,6 +221,56 @@ const getLeavesById=asyncHandler(async(req,res)=>{
 })
 
 
-  
+const approveOrRejectLeave = asyncHandler(async (req, res) => {
+  const { leaveId, isApproved } = req.body; // Extract leaveId and isApproved from the request body
 
-export {applyForLeave,leaveEmployee,getLeaveSummary,getLeavesById}
+  if (!leaveId || typeof isApproved !== 'boolean') {
+    return res.status(400).json({ message: "Invalid request parameters." });
+  }
+
+  const newStatus = isApproved ? "approved" : "rejected";
+
+  try {
+    // Update the leave status
+    const updatedLeave = await Leave.findOneAndUpdate(
+      {
+        "leaveSets._id": leaveId, 
+        "leaveSets.leave_status": "pending", 
+      },
+      {
+        $set: {
+          "leaveSets.$.leave_status": newStatus,
+          "leaveSets.$.approvedBy":req.user.id,
+          "leaveSets.$.approvedAt": isApproved ? new Date() : null,
+        },
+      },
+      { new: true } 
+    );
+
+    if (!updatedLeave) {
+    throw new ApiError(404, "Leave not found or not in a pending state.")
+    }
+
+    res.status(200).json(new ApiResponse(200, updatedLeave,`Leave successfully ${newStatus}. `))
+   
+  } catch (error) {
+    console.error(error);
+    throw new ApiError(500, error.message)
+ 
+  }
+});
+
+
+
+const checkIsManagement=async(userId)=>{
+  const user = await User.findById(userId); 
+  if (user.team !=='Management') {
+    throw new ApiError(
+      400,
+      "You don't have permission to access this resource!"
+    );
+  }
+}
+
+
+export {applyForLeave,leaveEmployee,getLeaveSummary,getLeavesById, approveOrRejectLeave}

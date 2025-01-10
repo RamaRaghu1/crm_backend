@@ -10,7 +10,8 @@ import mongoose from "mongoose";
 
 export const createTask = asyncHandler(async (req, res) => {
   try {
-    const { title, description,projectId, startDate, endDate, developer } = req.body;
+    const { title, description, projectId, startDate, endDate, developer } =
+      req.body;
     // const { projectId } = req.params;
     const project = await checkProjectExists(
       new mongoose.Types.ObjectId(projectId)
@@ -84,7 +85,8 @@ export const changeTaskStatus = asyncHandler(async (req, res) => {
         $set: {
           status,
         },
-      }
+      },
+      { new: true }
     );
 
     res
@@ -96,61 +98,159 @@ export const changeTaskStatus = asyncHandler(async (req, res) => {
 });
 
 export const getUserAllTask = asyncHandler(async (req, res) => {
-  const { id } = req.body;
-  const tasks = await Task.find({ developer: id });
+  const { id } = req.params;
+  const objectId = new mongoose.Types.ObjectId(id);
+  const tasks = await Task.aggregate([
+    {
+      $match: {
+        developer: objectId,
+      },
+    },
+    {
+      $lookup: {
+        from: "projects",
+        localField: "projectId",
+        foreignField: "_id",
+        as: "projectId",
+        pipeline: [
+          {
+            $project: {
+              title: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: {
+        path: "$projectId",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "assignedBy",
+        foreignField: "_id",
+        as: "assignedBy",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: {
+        path: "$assignedBy",
+      },
+    },
+  ]);
   res
     .status(200)
     .json(new ApiResponse(200, tasks, "tasks fetched successfully"));
 });
 
-
 export const getTaskDetails = asyncHandler(async (req, res) => {
-      const { taskId } = req.body;
+  const { taskId } = req.query;
 
-      // check task authorization -> project leader and developer
-      const task = await checkTaskAuthorization(taskId, req.user.id);
+  // check task authorization -> project leader and developer
+  await checkTaskAuthorization(taskId, req.user.id);
+  const objectId = new mongoose.Types.ObjectId(taskId);
+  const newtask = await Task.aggregate([
+    {
+      $match: {
+        _id: objectId,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "assignedBy",
+        foreignField: "_id",
+        as: "assignedBy",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+              position: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: {
+        path: "$assignedBy",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "developer",
+        foreignField: "_id",
+        as: "developer",
+        pipeline: [
+          {
+            $project: {
+              name: 1,
+              position: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unwind: {
+        path: "$developer",
+      },
+    },
+  ]);
 
-    res.status(200).json(new ApiResponse(200, task, "task details fetched successfully"))
-  }
-);
+  const taskData = newtask[0];
+  res
+    .status(200)
+    .json(new ApiResponse(200, taskData, "task details fetched successfully"));
+});
 
-export const checkTaskAuthorization = async (
-  taskId,
-  userId
-) => {
+export const checkTaskAuthorization = async (taskId, userId) => {
   const { project, task } = await checkTaskExistsInProject(taskId);
   const currUser = await User.findOne({ _id: userId });
   // console.log("_________currUser_",currUser)
-  if (task?.developer == userId || project.projectLeader == userId || currUser?.isSuperUser) {
-      return task;
+  if (
+    task?.developer == userId ||
+    project.projectLeader == userId ||
+    currUser?.isSuperUser
+  ) {
+    return task;
   } else {
-    throw new ApiError(500, "You don't have permission to access this resources!")
+    throw new ApiError(
+      500,
+      "You don't have permission to access this resources!"
+    );
   }
 };
 
 export const checkTaskExistsInProject = async (taskId) => {
-
   const task = await checkTaskExists(taskId);
-// console.log("task_____________", task)
-  
-  const project = await checkProjectExists(task.projectId);
-// console.log("project__________", project)
+  // console.log("task_____________", task)
 
+  const project = await checkProjectExists(task.projectId);
+  // console.log("project__________", project)
 
   // console.log(task?.projectId.toString() !== project._id.toString())
   if (task?.projectId.toString() !== project._id.toString()) {
     throw new ApiError(404, "Task does not exist in this project!");
   }
 
-  return { project,task };
+  return { project, task };
 };
 
-
-
 const checkTaskExists = async (id) => {
-  const task = await Task.findOne({
-    _id: id,
-  });
+  const taskId = new mongoose.Types.ObjectId(id);
+  const task = await Task.findOne({ _id: taskId });
+  console.log("__task", task);
   if (!task) {
     throw new ApiError(400, "task doesn't exist");
   }

@@ -26,6 +26,13 @@ leaveSets:[
           enum: ["full-day", "half-day"],
           required: true,
         },
+        approvedBy:{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+      },
+      approvedAt:{ type: Date, default: "" },
+      createdAt:{ type: Date, default: "" }
       },
 ]
 
