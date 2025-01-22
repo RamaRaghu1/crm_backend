@@ -9,6 +9,7 @@ id:{
 },
 employeeId:{ type: String, default: "" },
 employeeName:{ type: String, default: "" },
+branch:{type: String, default: ""},
 leaveSets:[
     {
         startDate: { type: Date, default: "" },

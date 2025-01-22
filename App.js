@@ -51,5 +51,6 @@ app.get("/", (req, res) => {
   res.send("API is running");
 });
 
+
 app.use(ErrorMiddleware);
 export default app;

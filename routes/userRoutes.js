@@ -1,4 +1,4 @@
-import { registerUser, loginUser,logoutUser, getUserById, getAllUsers, getUserInfo, updateUserProfile } from "../controllers/userController.js";
+import { registerUser, loginUser,logoutUser, getUserById, getAllUsers, getUserInfo, updateUserProfile, updateUserRole } from "../controllers/userController.js";
 import { Router } from "express";
 import { verifyJWT } from "../middleware/authMiddleware.js";
 
@@ -14,6 +14,7 @@ userRouter.route("/logout").get(verifyJWT, logoutUser)
 userRouter.route("/user/:id").get(verifyJWT,getUserById);
 userRouter.route("/all-users").get(verifyJWT,getAllUsers);
 userRouter.route("/update-profile/:id").put(verifyJWT,updateUserProfile);
+userRouter.route("/update-role").put(verifyJWT,updateUserRole);
 
 
 

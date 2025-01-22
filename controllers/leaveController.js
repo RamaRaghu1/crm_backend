@@ -6,7 +6,7 @@ import User from "../models/userModel.js";
 import Leave from "../models/leaveModel.js";
 
 const applyForLeave = asyncHandler(async (req, res, next) => {
-  const { uid, leaveDate, employeeName, employeeId } = req.body;
+  const { uid, leaveDate, employeeName, employeeId ,branch} = req.body;
 
   // Validate User ID
   if (!uid) {
@@ -112,7 +112,8 @@ const applyForLeave = asyncHandler(async (req, res, next) => {
     const leaveRecord = await Leave.findOneAndUpdate(
       { id: uid ,
         employeeName:employeeName,
-        employeeId:employeeId
+        employeeId:employeeId,
+        branch:branch,
       },
       { $push: { leaveSets: leaveEntry } },
       { new: true, upsert: true }
@@ -183,6 +184,7 @@ const leaveEmployee = asyncHandler(async (req, res) => {
           },
           employeeName: 1,
           employeeId: 1,
+          branch:1,
       }
   ).sort({ createdAt: -1 });
 
@@ -203,7 +205,7 @@ const getLeavesById=asyncHandler(async(req,res)=>{
       const { id } = req.params;
   
     
-      const leaves = await Leave.find({id}).select({leaveSets:1, createdAt:1}).sort({ createdAt: -1 })
+      const leaves = await Leave.find({id}).select({leaveSets:1}).sort({ createdAt: -1 })
   
     
       if (!leaves.length) {

@@ -84,9 +84,17 @@ const registerUser = asyncHandler(async (req, res) => {
     team,
     branch,
     isSuperUser,
-
+    salary,
+    address,
+    emergencyContactNumber,
+    emergencyContactName,
+    emergencyContactRelation,
+    employmentStatus,
+    dateOfBirth,
+    phone,
+    gender,
   } = req.body;
-// console.log("_______", req.body);
+  // console.log("_______", req.body);
   const userCount = await User.countDocuments();
   const employeeId = `KT${userCount + 1}`;
 
@@ -100,7 +108,15 @@ const registerUser = asyncHandler(async (req, res) => {
       team,
       branch,
       isSuperUser,
- 
+      salary,
+      address,
+      emergencyContactNumber,
+      emergencyContactName,
+      emergencyContactRelation,
+      employmentStatus,
+      dateOfBirth,
+      phone,
+      gender,
     ].some((field) => field?.toString()?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required!");
@@ -122,7 +138,15 @@ const registerUser = asyncHandler(async (req, res) => {
       team,
       isSuperUser,
       branch,
-    
+      salary,
+      emergencyContactNumber,
+      emergencyContactName,
+      emergencyContactRelation,
+      employmentStatus,
+      dateOfBirth,
+      phone,
+      address,
+      gender,
     });
 
     const createdUser = await User.findById(user._id);
@@ -169,7 +193,7 @@ const loginUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
-    maxAge: 1 * 24 * 60 * 60 * 1000
+    maxAge: 1 * 24 * 60 * 60 * 1000,
     // domain:"http://localhost:5173/" // try "lax" or "strict" for testing
     // remove domain for local testing
   };
@@ -212,8 +236,8 @@ const getUserInfo = asyncHandler(async (req, res) => {
     }
 
     // Fetch user information from the database, excluding sensitive fields like password
-    const user = await User.findById({_id:userId}).select("-password");
-// console.log("______",user)
+    const user = await User.findById({ _id: userId }).select("-password");
+    // console.log("______",user)
     if (!user) {
       throw new ApiError(404, "User not found");
     }
@@ -348,22 +372,53 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
   }
 });
 
-const checkUserExistsById=async(id)=>{
-  const user=await User.findById(id);
-  if(!user){
-    throw new ApiError(404,"User you are looking for does not exist!")
+// update user role
+const updateUserRole = asyncHandler(async (req, res, next) => {
+  try {
+    const { email, isAdmin, isSuperUser } = req.body;
+    const requestingUserId = req.user.id;
+
+    // Check if the requesting user is an admin
+    const requestingUser = await User.findById(requestingUserId);
+    if (!requestingUser || !requestingUser.isAdmin) {
+      throw new ApiError(403, "Unauthorized: Admin access required");
+    }
+
+    // Check if the target user exists
+    const targetUser = await User.findOne({ email });
+    if (!targetUser) {
+      throw new ApiError(404, "User not found");
+    }
+
+    // Update the target user's role
+    targetUser.isAdmin = isAdmin;
+    targetUser.isSuperUser=isSuperUser;
+    await targetUser.save();
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, targetUser, "User role updated successfully!"));
+  } catch (error) {
+    throw new ApiError(400, error.message);
+  }
+});
+
+
+const checkUserExistsById = async (id) => {
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(404, "User you are looking for does not exist!");
   }
   return user;
-}
+};
 export {
   loginUser,
   logoutUser,
   getUserInfo,
   updateUserProfile,
-
   registerUser,
-
+  updateUserRole,
   getUserById,
   getAllUsers,
-  checkUserExistsById
+  checkUserExistsById,
 };

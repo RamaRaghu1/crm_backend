@@ -10,8 +10,9 @@ const userSchema = new mongoose.Schema(
     joiningDate: { type: Date, default: "" },
     position: { type: String, default: "" },
     name: { type: String, default: "" },
-    branch:{type: String, default: "" },
+    branch: { type: String, default: "" },
     team: { type: String, default: "" },
+    isAdmin:{type: Boolean, default: false},
     isSuperUser: { type: Boolean, default: false },
     attendance: [
       {
@@ -46,14 +47,39 @@ const userSchema = new mongoose.Schema(
       public_id: { type: String, default: null },
       url: { type: String, default: null },
     },
-    address:{
+    address: {
       street: { type: String, default: "" },
       city: { type: String, default: "" },
       state: { type: String, default: "" },
       zipCode: { type: Number, default: "" },
     },
-   
-    phone: { type: String, default: "" },
+    emergencyContactNumber: {
+      type: Number,
+      default: "",
+    },
+    emergencyContactName: {
+      type: String,
+      default: "",
+    },
+    emergencyContactRelation: {
+      type: String,
+      default: "",
+    },
+    salary:{
+      type: Number,
+      default: "",
+    },
+   gender:{
+    type: String,
+    enum: ["Male", "Female", "Other"],
+    default: "Male",
+   },
+    employmentStatus:{
+      type: String,
+      enum: ["Active", "Inactive"],
+      default: "Active",
+    },
+    phone: { type: Number, default: "" },
     dateOfBirth: { type: Date, default: "" },
     // refreshToken: { type: String, default: "" },
   },
