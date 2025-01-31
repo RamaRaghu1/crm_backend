@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema(
           enum: ["Present", "Absent", "Half Day"],
           default: "Absent",
         },
+        permission:{ type: Boolean, default: false },
+        reason:{type:String, default:''}
       },
     ],
     leaveDate: [

@@ -188,14 +188,73 @@ const leaveEmployee = asyncHandler(async (req, res) => {
       }
   ).sort({ createdAt: -1 });
 
-  if (!foundUser || foundUser.length === 0) {
-      throw new ApiError(404, "Couldn't find any user!");
-  }
+  // if (!foundUser || foundUser.length === 0) {
+  //     throw new ApiError(404, "Couldn't find any user!");
+  // }
 
   return res.status(200).json(new ApiResponse(200, foundUser, "Users found"));
 });
 
 
+const rejectedLeaveReq = asyncHandler(async (req, res) => {
+  const foundUser = await Leave.find(
+      {
+          leaveSets: {
+              $elemMatch: {
+                  leave_status: "rejected",
+              },
+          },
+      },
+      {
+          leaveSets: {
+              $filter: {
+                  input: "$leaveSets",
+                  as: "leaveSet",
+                  cond: { $eq: ["$$leaveSet.leave_status", "rejected"] },
+              },
+          },
+          employeeName: 1,
+          employeeId: 1,
+          branch:1,
+      }
+  ).sort({ createdAt: -1 });
+
+  // if (!foundUser || foundUser.length === 0) {
+  //     throw new ApiError(404, "Couldn't find any user!");
+  // }
+
+  return res.status(200).json(new ApiResponse(200, foundUser, "Users found"));
+});
+
+const approvedLeaveReq = asyncHandler(async (req, res) => {
+  const foundUser = await Leave.find(
+      {
+          leaveSets: {
+              $elemMatch: {
+                  leave_status: "approved",
+              },
+          },
+      },
+      {
+          leaveSets: {
+              $filter: {
+                  input: "$leaveSets",
+                  as: "leaveSet",
+                  cond: { $eq: ["$$leaveSet.leave_status", "approved"] },
+              },
+          },
+          employeeName: 1,
+          employeeId: 1,
+          branch:1,
+      }
+  ).sort({ createdAt: -1 });
+
+  // if (!foundUser || foundUser.length === 0) {
+  //     throw new ApiError(404, "Couldn't find any user!");
+  // }
+
+  return res.status(200).json(new ApiResponse(200, foundUser, "Users found"));
+});
 
 
 const getLeavesById=asyncHandler(async(req,res)=>{
@@ -258,10 +317,37 @@ const approveOrRejectLeave = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error(error);
     throw new ApiError(500, error.message)
- 
   }
 });
 
+const deleteLeave = asyncHandler(async(req,res)=>{
+  try {
+    const { employeeId, leaveSetId } = req.body;
+
+  
+    const employeeLeave = await Leave.findOne({ employeeId });
+
+    if (!employeeLeave  ) {
+      throw new ApiError(404,"Employee leave record not found" );
+    }
+    const leaveExists = employeeLeave.leaveSets.some((leave) => leave._id.toString() === leaveSetId);
+    if (!leaveExists) {
+      throw new ApiError(404, "Leave record not found");
+    }
+
+    // Filter out the leaveSet to be deleted
+    employeeLeave.leaveSets = employeeLeave.leaveSets.filter(
+      (leave) => leave._id.toString() !== leaveSetId
+    );
+
+    await employeeLeave.save();
+    res.status(200).json(new ApiResponse(200, null,"Leave record deleted successfully" ))
+  
+  } catch (error) {
+    throw new ApiError(500, error.message)
+   
+  }
+})
 
 
 const checkIsManagement=async(userId)=>{
@@ -274,5 +360,100 @@ const checkIsManagement=async(userId)=>{
   }
 }
 
+const decimalOpt = (number, digits) => {
+  digits = digits ? digits : 8
+  number = Math.trunc(number * Math.pow(10, digits)) / Math.pow(10, digits)
+  return number
+}
+const getDaysInMonth = (month, year) => {
+  const endDate = new Date(year, month, 0);
+  const daysInMonth = endDate.getDate();
+  const today = new Date();
 
-export {applyForLeave,leaveEmployee,getLeaveSummary,getLeavesById, approveOrRejectLeave}
+  return (month === today.getMonth() + 1 && year === today.getFullYear()) ? today.getDate() : daysInMonth;
+};
+
+const daysInMonth = (month, year) => {
+  const daysInMonths = [31, (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return daysInMonths[month - 1];
+};
+
+const getMonthDates = (month, year) => {
+  if (month < 1 || month > 12) {
+    throw new Error("Invalid month number. Please enter a number between 1 and 12.");
+  }
+
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0); // Last day of the month
+
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString()
+  };
+};
+
+const getData = async (userId, dateRange) => {
+  const leaveSummary = await Leave.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+        startDate: { $gte: new Date(dateRange.startDate) },
+        endDate: { $lte: new Date(dateRange.endDate) }
+      }
+    },
+    {
+      $group: {
+        _id: '$leaveType',
+        count: { $sum: '$leaveDays' }
+      }
+    }
+  ]);
+
+  const userSalary = await User.findOne({ _id: userId }, { salary: 1 });
+  return { leaveSummary, usersalary: userSalary };
+};
+
+const Summary = asyncHandler(async (req, res, next) => {
+  try {
+    const today = new Date();
+    const { month = today.getMonth() + 1, year = today.getFullYear(), employeeId, branch } = req.body;
+
+    if (month > today.getMonth() + 1 && year >= today.getFullYear()) {
+      return res.status(200).json(new ApiResponse(200, null, "You can't fetch data for next month"));
+    }
+
+    const noOfDays = daysInMonth(month, year);
+    const datesPassed = getDaysInMonth(month, year);
+    const dateRange = getMonthDates(month, year);
+
+    const branchEmployees = await User.find({
+      employeeId: new RegExp(employeeId, 'i'),
+      branch: new RegExp(branch, 'i')
+    }).exec();
+
+    const result = await Promise.all(branchEmployees.map(async (employee) => {
+      const userInfo = await getData(employee._id, dateRange);
+      const unpaidLeaves = userInfo.leaveSummary.find(leave => leave._id === 'unpaid-leave')?.count || 0;
+
+      return {
+        employeeId: employee.employeeId,
+        email: employee.email,
+        name:employee.name,
+        position: employee.position,
+        branch: employee.branch,
+        team: employee.team,
+        persalary: employee.salary,
+        leaveSummary: userInfo.leaveSummary,
+        present: datesPassed - unpaidLeaves,
+        salaryTotal: userInfo.usersalary.salary ? decimalOpt(((userInfo.usersalary.salary / noOfDays) * (datesPassed - unpaidLeaves)), 2) : null
+      };
+    }));
+
+    return res.status(200).json(new ApiResponse(200, result, "Leave summary fetched successfully"));
+  } catch (error) {
+    next(new ApiError(500, error.message));
+  }
+});
+
+
+export {applyForLeave,leaveEmployee,getLeaveSummary,getLeavesById, approveOrRejectLeave,Summary, rejectedLeaveReq, approvedLeaveReq, deleteLeave }

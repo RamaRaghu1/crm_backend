@@ -5,7 +5,7 @@ import User from "../models/userModel.js";
 import mongoose from "mongoose";
 
 const updateAttendance = asyncHandler(async (req, res, next) => {
-  const { id, status, date } = req.body;
+  const { id, status, date , permission, reason} = req.body;
 
   try {
     // Validate ObjectId

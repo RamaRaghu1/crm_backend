@@ -4,6 +4,17 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import User from "../models/userModel.js";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer"
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST , // Replace with your SMTP host
+  port: process.env.EMAIL_PORT || 587,    
+  service:process.env.SMTP_SERVICE,          // Replace with your SMTP port
+  secure: false,                                    // Use true for 465, false for other ports
+  auth: {
+    user: process.env.EMAIL_USER,                  // Your email address
+    pass: process.env.EMAIL_PASS,                  // Your email password
+  },
+});
 // const generateAccessAndRefereshTokens = async (userId) => {
 //   try {
 //     const user = await User.findById(userId);
@@ -372,6 +383,37 @@ const updateUserProfile = asyncHandler(async (req, res, next) => {
   }
 });
 
+
+const sendMail=asyncHandler(async(req,res,next)=>{
+
+  const { to, subject, message } = req.body;
+
+  if (!to || !subject || !message) {
+    return res.status(400).json({ error: 'Missing required fields: to, subject, message' });
+  }
+
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || 'ramaraghunathan18@gmail.com', 
+      to: to,
+      subject: subject,
+      text: message,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('Email sent:', info.response);
+    res
+    .status(200)
+    .json(new ApiResponse(200, null, 'Email sent successfully.'));
+   
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw new ApiError(404, error.message);
+   
+  }
+})
+
 // update user role
 const updateUserRole = asyncHandler(async (req, res, next) => {
   try {
@@ -420,5 +462,6 @@ export {
   updateUserRole,
   getUserById,
   getAllUsers,
+  sendMail,
   checkUserExistsById,
 };
