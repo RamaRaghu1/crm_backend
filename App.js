@@ -8,6 +8,7 @@ import projectRoutes from "./routes/projectRoutes.js";
 import cloudinary from "cloudinary";
 import attendanceRouter from "./routes/attendanceRoutes.js";
 import taskRouter from "./routes/taskRoutes.js";
+import holidayRouter from "./routes/holidayRoutes.js";
 
 
 
@@ -31,6 +32,7 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
 
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/holiday", holidayRouter);
 app.use("/api/v1/leave",leaveRouter)
 app.use("/api/v1/project",projectRoutes);
 app.use("/api/v1/attendance",attendanceRouter);

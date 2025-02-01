@@ -331,13 +331,13 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 // edit employee
 
-const editEmployee = asyncHandler(async (req, res) => {
-  const { email, name, position, phone, address, team } = req.body;
-  const id = req.params.id;
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return next(new ApiError(400, "Invalid User ID"));
-  }
-});
+// const editEmployee = asyncHandler(async (req, res) => {
+//   const { email, name, position, phone, address, team } = req.body;
+//   const id = req.params.id;
+//   if (!mongoose.Types.ObjectId.isValid(id)) {
+//     return next(new ApiError(400, "Invalid User ID"));
+//   }
+// });
 
 const updateUserProfile = asyncHandler(async (req, res, next) => {
   try {
