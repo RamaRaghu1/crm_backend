@@ -24,7 +24,7 @@ const addHoliday = asyncHandler(async (req, res, next) => {
   
   // Edit a holiday
   const updateHoliday = asyncHandler(async (req, res, next) => {
-    const id = req.params.id;
+    const {id} = req.body;
   
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new ApiError(400, "Invalid Holiday ID"));
@@ -50,7 +50,7 @@ const addHoliday = asyncHandler(async (req, res, next) => {
   
   // Delete a holiday
   const deleteHoliday = asyncHandler(async (req, res, next) => {
-    const id = req.params.id;
+    const {id} = req.body;
   
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new ApiError(400, "Invalid Holiday ID"));
@@ -70,5 +70,32 @@ const addHoliday = asyncHandler(async (req, res, next) => {
       throw new ApiError(400, error.message);
     }
   });
+
+
+  const getAllHolidays = asyncHandler(async (req, res, next) => {
+    try {
+        const holidays = await Holiday.find();
+        return res
+            .status(200)
+            .json(new ApiResponse(200, holidays , "Holidays fetched successfully!"));
+    } catch (error) {
+        next(new ApiError(500, error.message));
+    }
+});
+
+const getHolidayById = asyncHandler(async (req, res, next) => {
+  try {
+      const { id } = req.body;
+      const holiday = await Holiday.findById(id);
+      if (!holiday) {
+          return next(new ApiError(404, "Holiday not found"));
+      }
+      return res
+          .status(200)
+          .json(new ApiResponse(200, holiday, "Holiday fetched successfully!"));
+  } catch (error) {
+      next(new ApiError(500, error.message));
+  }
+});
   
-  export {addHoliday, updateHoliday, deleteHoliday};
+  export {addHoliday, updateHoliday, deleteHoliday, getAllHolidays, getHolidayById};

@@ -9,6 +9,7 @@ import cloudinary from "cloudinary";
 import attendanceRouter from "./routes/attendanceRoutes.js";
 import taskRouter from "./routes/taskRoutes.js";
 import holidayRouter from "./routes/holidayRoutes.js";
+import announcementRouter from "./routes/announcementRoutes.js";
 
 
 
@@ -37,6 +38,7 @@ app.use("/api/v1/leave",leaveRouter)
 app.use("/api/v1/project",projectRoutes);
 app.use("/api/v1/attendance",attendanceRouter);
 app.use("/api/v1/task",taskRouter);
+app.use("/api/v1/announcement",announcementRouter);
 
 cloudinary.config({
   cloud_name:process.env.CLOUD_NAME,

@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     name: { type: String, default: "" },
     branch: { type: String, default: "" },
     team: { type: String, default: "" },
-    isAdmin:{type: Boolean, default: false},
+    isAdmin: { type: Boolean, default: false },
     isSuperUser: { type: Boolean, default: false },
     attendance: [
       {
@@ -22,8 +22,8 @@ const userSchema = new mongoose.Schema(
           enum: ["Present", "Absent", "Half Day"],
           default: "Absent",
         },
-        permission:{ type: Boolean, default: false },
-        reason:{type:String, default:''}
+        permission: { type: Boolean, default: false },
+        reason: { type: String, default: "" },
       },
     ],
     leaveDate: [
@@ -45,6 +45,7 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    permissions: [{ accessLeaveRequest: { type: Boolean, default: "" } }],
     image: {
       public_id: { type: String, default: null },
       url: { type: String, default: null },
@@ -67,16 +68,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    salary:{
+    salary: {
       type: Number,
       default: "",
     },
-   gender:{
-    type: String,
-    enum: ["Male", "Female", "Other"],
-    default: "Male",
-   },
-    employmentStatus:{
+    gender: {
+      type: String,
+      enum: ["Male", "Female", "Other"],
+      default: "Male",
+    },
+    employmentStatus: {
       type: String,
       enum: ["Active", "Inactive"],
       default: "Active",

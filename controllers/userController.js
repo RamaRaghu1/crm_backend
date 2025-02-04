@@ -104,10 +104,11 @@ const registerUser = asyncHandler(async (req, res) => {
     dateOfBirth,
     phone,
     gender,
+    employeeId
   } = req.body;
   // console.log("_______", req.body);
-  const userCount = await User.countDocuments();
-  const employeeId = `KT${userCount + 1}`;
+  // const userCount = await User.countDocuments();
+  // const employeeId = `KT${userCount + 1}`;
 
   if (
     [
@@ -128,6 +129,7 @@ const registerUser = asyncHandler(async (req, res) => {
       dateOfBirth,
       phone,
       gender,
+      employeeId
     ].some((field) => field?.toString()?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required!");

@@ -10,7 +10,7 @@ const holidaySchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["Public Holiday", "Optional Holiday"], // Modify as needed
+      enum: ["Public Holiday", "Optional Holiday"], 
     },
     date: {
       type: Date,
@@ -23,7 +23,7 @@ const holidaySchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt fields
+    timestamps: true, 
   }
 );
 
