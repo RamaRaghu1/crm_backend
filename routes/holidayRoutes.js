@@ -6,8 +6,8 @@ const holidayRouter=Router();
 
 holidayRouter.route("/add-holiday").post(verifyJWT,addHoliday);
 holidayRouter.route("/delete-holiday").delete(verifyJWT,deleteHoliday);
-holidayRouter.route("/edit-holiday").put(verifyJWT, updateHoliday);
+holidayRouter.route("/edit-holiday/:id").put(verifyJWT, updateHoliday);
 holidayRouter.route("/get-all-holiday").get(verifyJWT, getAllHolidays);
-holidayRouter.route("/get-holiday").post(verifyJWT, getHolidayById);
+holidayRouter.route("/get-holiday/:id").get(verifyJWT, getHolidayById);
 
 export default holidayRouter

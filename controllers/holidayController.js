@@ -24,17 +24,19 @@ const addHoliday = asyncHandler(async (req, res, next) => {
   
   // Edit a holiday
   const updateHoliday = asyncHandler(async (req, res, next) => {
-    const {id} = req.body;
-  
+    const {id} = req.params;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new ApiError(400, "Invalid Holiday ID"));
     }
   
     try {
-      const updatedHoliday = await Holiday.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true,
-      });
+      const updatedHoliday = await Holiday.findByIdAndUpdate(
+        id, 
+        { $set: req.body }, // Directly use req.body
+        { new: true, runValidators: true } // Return updated document & validate
+      );
+
   
       if (!updatedHoliday) {
         return next(new ApiError(404, "Holiday not found"));
@@ -85,7 +87,7 @@ const addHoliday = asyncHandler(async (req, res, next) => {
 
 const getHolidayById = asyncHandler(async (req, res, next) => {
   try {
-      const { id } = req.body;
+      const { id } = req.params;
       const holiday = await Holiday.findById(id);
       if (!holiday) {
           return next(new ApiError(404, "Holiday not found"));

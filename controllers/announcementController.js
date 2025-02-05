@@ -5,7 +5,7 @@ import Announcement from "../models/announcementModel.js";
 import mongoose from "mongoose";
 
 
-const addAnnouncement=asyncHandler(async(req,res)=>{
+const addAnnouncement=asyncHandler(async(req,res, next)=>{
     try{
         const {title, content, date, author,priority}=req.body;
         if(!title || !content || !date|| !author|| !priority){
@@ -21,7 +21,8 @@ const addAnnouncement=asyncHandler(async(req,res)=>{
 })
 
 const updateAnnouncement = asyncHandler(async (req, res, next) => {
-    const {id} = req.body;
+    const {id} = req.params;
+
   
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new ApiError(400, "Invalid Holiday ID"));
@@ -81,7 +82,7 @@ const updateAnnouncement = asyncHandler(async (req, res, next) => {
 
 const getAnnouncementById = asyncHandler(async (req, res, next) => {
     try {
-        const { id } = req.body;
+        const { id } = req.params;
         const announcement = await Announcement.findById(id);
         if (!announcement) {
             return next(new ApiError(404, "Announcement not found"));

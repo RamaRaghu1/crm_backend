@@ -7,8 +7,8 @@ const announcementRouter=Router();
 
 announcementRouter.route("/add-announcement").post(verifyJWT,addAnnouncement);
 announcementRouter.route("/delete-announcement").delete(verifyJWT,deleteAnnouncement);
-announcementRouter.route("/edit-announcement").put(verifyJWT, updateAnnouncement);
+announcementRouter.route("/edit-announcement/:id").put(verifyJWT, updateAnnouncement);
 announcementRouter.route("/get-all-announcement").get(verifyJWT, getAllAnnouncements);
-announcementRouter.route("/get-announcement").post(verifyJWT, getAnnouncementById);
+announcementRouter.route("/get-announcement/:id").get(verifyJWT, getAnnouncementById);
 
 export default announcementRouter
