@@ -8,6 +8,7 @@ export const connectDB = async () => {
    
     console.log(`mongodb connect on port: ${connectionInstance.connection.port}`);
   } catch (error) {
+    console.log(error)
     console.log("MongoDB connection error", error.message);
     process.exit(1)
   }
