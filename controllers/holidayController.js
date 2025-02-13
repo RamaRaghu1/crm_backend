@@ -52,7 +52,7 @@ const addHoliday = asyncHandler(async (req, res, next) => {
   
   // Delete a holiday
   const deleteHoliday = asyncHandler(async (req, res, next) => {
-    const {id} = req.body;
+    const {id} = req.params;
   
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new ApiError(400, "Invalid Holiday ID"));

@@ -45,7 +45,9 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
-    permissions: [{ accessLeaveRequest: { type: Boolean, default: "" } }],
+    permissions: { 
+      accessLeaveRequest: { type: Boolean, default: false } 
+    },
     image: {
       public_id: { type: String, default: null },
       url: { type: String, default: null },
